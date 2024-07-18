@@ -94,3 +94,27 @@ exports.updateIsAdminApproved = async (req, res) => {
       res.status(500).json(responseStructure.error('Server error', 500));
     }
   };
+  exports.getUser = async (req, res) => {
+   // Assuming userId is passed as a query parameter
+  
+    try {
+      // Fetch the salesman by userId and sort by createdAt descending
+      const salesman = await User.find()
+  
+      // Check if salesman is found
+      if (!salesman || salesman.length === 0) {
+        return res.status(404).json(responseStructure.error('Salesman not found'));
+      }
+  
+      // Structure the response
+      const response = responseStructure.success(salesman, 'Salesman fetched successfully');
+  
+      // Send the response back to the client
+      res.status(200).json(response);
+    } catch (error) {
+      // Handle errors
+      console.error('Error Fetching Salesman:', error);
+      const errorMessage = error.message || 'Error fetching salesman';
+      res.status(500).json(responseStructure.error(errorMessage));
+    }
+  };
