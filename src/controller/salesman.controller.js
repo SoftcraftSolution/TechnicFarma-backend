@@ -1,0 +1,82 @@
+const cloudinary = require('cloudinary').v2;
+const Salesman = require('../model/salesman.model');
+const responseStructure = require('../middleware/response');
+const User = require('../model/user.model');
+
+exports.addSalesman = async (req, res) => {
+    try {
+      // Extract the necessary fields from the request body
+      const { location } = req.body;
+      const userId = req.body.userId; // Assuming userId is passed in the request body
+  
+      // Log the received data for debugging
+      console.log('Received Data:', { location, image: req.file, userId });
+  
+      // Function to upload image to Cloudinary
+      const uploadToCloudinary = async (filePath) => {
+        try {
+          const result = await cloudinary.uploader.upload(filePath);
+          return result.secure_url;
+        } catch (error) {
+          throw new Error(`Error uploading image: ${error.message}`);
+        }
+      };
+  
+      let imageUrl; // Initialize imageUrl variable
+  
+      // Determine the image URL to use
+      if (req.file) {
+        console.log('Uploading Image:', req.file);
+        imageUrl = await uploadToCloudinary(req.file.path);
+      }
+  
+      // Create a new salesman object
+      const newSalesman = new Salesman({
+        userId: userId,
+        location,
+        image: imageUrl, // Set the image URL (either uploaded or default)
+      });
+  
+      // Save the salesman object to the database
+      const savedSalesman = await newSalesman.save();
+  
+      // Structure the response
+      const response = responseStructure.success({
+        location: savedSalesman.location,
+        image: savedSalesman.image
+      }, 'Salesman added successfully');
+  
+      // Send the response back to the client
+      res.status(201).json(response);
+    } catch (error) {
+      // Handle errors
+      console.error('Error Adding Salesman:', error);
+      const errorMessage = error.message || 'Error adding salesman';
+      res.status(500).json(responseStructure.error(errorMessage));
+    }
+  };
+  
+  exports.getSalesmanByUserId = async (req, res) => {
+    const userId = req.query.userId; // Assuming userId is passed as a query parameter
+  
+    try {
+      // Fetch the salesman by userId and sort by createdAt descending
+      const salesman = await Salesman.find({ userId: userId }).sort({ createdAt: -1 });
+  
+      // Check if salesman is found
+      if (!salesman || salesman.length === 0) {
+        return res.status(404).json(responseStructure.error('Salesman not found'));
+      }
+  
+      // Structure the response
+      const response = responseStructure.success(salesman, 'Salesman fetched successfully');
+  
+      // Send the response back to the client
+      res.status(200).json(response);
+    } catch (error) {
+      // Handle errors
+      console.error('Error Fetching Salesman:', error);
+      const errorMessage = error.message || 'Error fetching salesman';
+      res.status(500).json(responseStructure.error(errorMessage));
+    }
+  };
