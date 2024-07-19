@@ -28,9 +28,11 @@ exports.register = async (req, res) => {
     user.password = await bcrypt.hash(password, salt);
 
     // Save the user
-    await user.save();
+    const savedUser = await user.save();
 
-    res.status(201).json(responseStructure.success(user, 'User registered successfully'));
+    console.log(savedUser); // Log the saved user to ensure it includes all fields
+
+    res.status(201).json(responseStructure.success(savedUser, 'User registered successfully'));
   } catch (err) {
     console.error(err.message);
     res.status(500).json(responseStructure.error('Server error', 500));
@@ -116,5 +118,63 @@ exports.updateIsAdminApproved = async (req, res) => {
       console.error('Error Fetching Salesman:', error);
       const errorMessage = error.message || 'Error fetching salesman';
       res.status(500).json(responseStructure.error(errorMessage));
+    }
+  };
+ exports.updateStatus= async (req, res) => {
+    const { id } = req.query;
+    const { isActive } = req.body;
+  
+    try {
+      const user = await User.findByIdAndUpdate(
+        id,
+        { isActive },
+        { new: true, runValidators: true }
+      );
+  
+      if (!user) {
+        return res.status(404).send({ message: 'User not found' });
+      }
+  
+      res.send(user);
+    } catch (error) {
+      res.status(400).send({ message: error.message });
+    }
+  }
+  exports.getActiveUsersToday = async (req, res) => {
+    try {
+      const startOfDay = new Date();
+      startOfDay.setHours(0, 0, 0, 0);
+  
+      const endOfDay = new Date();
+      endOfDay.setHours(23, 59, 59, 999);
+  
+      const activeUsers = await User.countDocuments({
+        lastActive: { $gte: startOfDay, $lte: endOfDay },
+        isActive: true,
+      });
+  
+      res.status(200).json(responseStructure.success({ totalActiveUsers: activeUsers }, 'Total active users today fetched successfully'));
+    } catch (error) {
+      console.error('Error fetching active users:', error);
+      res.status(500).json(responseStructure.error('Server error', 500));
+    }
+  };
+  exports.getInactiveUsersToday = async (req, res) => {
+    try {
+      const startOfDay = new Date();
+      startOfDay.setHours(0, 0, 0, 0);
+  
+      const endOfDay = new Date();
+      endOfDay.setHours(23, 59, 59, 999);
+  
+      const inactiveUsers = await User.countDocuments({
+        lastActive: { $gte: startOfDay, $lte: endOfDay },
+        isActive: false,
+      });
+  
+      res.status(200).json(responseStructure.success({ totalInactiveUsers: inactiveUsers }, 'Total inactive users today fetched successfully'));
+    } catch (error) {
+      console.error('Error fetching inactive users:', error);
+      res.status(500).json(responseStructure.error('Server error', 500));
     }
   };

@@ -10,5 +10,8 @@ router.post('/admin-approved', userController.updateIsAdminApproved);
 router.get('/get-salesman',userController.getUser)
 router.post('/salesman-add', upload.single('image'), salesmanController.addSalesman);
 router.get('/get-salesman-by-id',salesmanController.getSalesmanByUserId)
+router.get('/update-status',userController.updateStatus)
+router.get('/activeUsersToday', userController.getActiveUsersToday);
+router.get('/inactiveUsersToday', userController.getInactiveUsersToday);
 
 module.exports = router;

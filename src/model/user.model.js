@@ -31,7 +31,11 @@ const userSchema = new mongoose.Schema({
     type: Boolean,
     default: false
   },
- 
+  isActive: {
+    type: Boolean,
+    default: true
+  },
+  lastActive: { type: Date, default: Date.now },
   createdAt: {
     type: Date,
     default: Date.now
