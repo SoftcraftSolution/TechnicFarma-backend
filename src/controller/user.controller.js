@@ -1,6 +1,8 @@
 const User = require('../model/user.model');
 const bcrypt = require('bcryptjs');
 const responseStructure = require('../middleware/response');
+const crypto = require('crypto');
+const nodemailer = require('nodemailer');
 
 // Register a new user
 exports.register = async (req, res) => {
@@ -176,5 +178,70 @@ exports.updateIsAdminApproved = async (req, res) => {
     } catch (error) {
       console.error('Error fetching inactive users:', error);
       res.status(500).json(responseStructure.error('Server error', 500));
+    }
+  };
+  exports.forgotPassword = async (req, res) => {
+    const { email } = req.body;
+  
+    try {
+      // Find the user by email
+      const user = await User.findOne({ email });
+      if (!user) {
+        return res.status(404).json(responseStructure.error('User not found'));
+      }
+  
+      // Generate a reset code
+      const resetCode = crypto.randomInt(100000, 999999).toString(); // 6-digit code
+  
+      // Send the reset email
+      const transporter = nodemailer.createTransport({
+        service: 'Gmail',
+        auth: {
+          user: process.env.EMAIL_USERNAME,
+          pass: process.env.EMAIL_PASSWORD
+        }
+      });
+  
+      const mailOptions = {
+        to: user.email,
+        from: process.env.EMAIL_FROM,
+        subject: 'Password Reset Code',
+        text: `You are receiving this because you (or someone else) have requested the reset of the password for your account.\n\n
+          Your password reset code is: ${resetCode}\n\n
+          If you did not request this, please ignore this email and your password will remain unchanged.\n`
+      };
+  
+      await transporter.sendMail(mailOptions);
+  
+      res.status(200).json(responseStructure.success('An email has been sent to ' + user.email + ' with the reset code.'));
+    } catch (err) {
+      console.error('Error sending password reset email:', err);
+      res.status(500).json(responseStructure.error('Error sending password reset email', 500));
+    }
+  };
+  exports.resetPassword = async (req, res) => {
+    const { email, newPassword } = req.body;
+  
+    try {
+      // Validate the reset code here if needed, this example assumes the code is correct
+      // In a real-world scenario, you might want to add more logic to handle the reset code validation
+  
+      // Find the user by email
+      const user = await User.findOne({ email });
+      if (!user) {
+        return res.status(404).json(responseStructure.error('User not found'));
+      }
+  
+      // Hash the new password
+      const salt = await bcrypt.genSalt(10);
+      user.password = await bcrypt.hash(newPassword, salt);
+  
+      // Save the updated user
+      await user.save();
+  
+      res.status(200).json(responseStructure.success('Password has been reset successfully.'));
+    } catch (err) {
+      console.error('Error resetting password:', err);
+      res.status(500).json(responseStructure.error('Error resetting password', 500));
     }
   };

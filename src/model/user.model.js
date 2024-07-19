@@ -27,6 +27,9 @@ const userSchema = new mongoose.Schema({
     type: Date,
     required: true
   },
+  resetCode:{
+    type: String,
+  },
   isadminapproved: {
     type: Boolean,
     default: false
