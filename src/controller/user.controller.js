@@ -59,7 +59,7 @@ exports.login = async (req, res) => {
     }
 
     // Check if the user is admin approved
-    if (!user.isadminapproved) {
+    if (!user.isAdminApproved) {
       return res.status(200).json({
         statusCode: '200',
         message: 'Your account has not been approved by an admin yet.',
