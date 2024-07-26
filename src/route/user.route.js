@@ -15,5 +15,6 @@ router.get('/get-salesman-by-id',salesmanController.getSalesmanByUserId)
 router.get('/update-status',userController.updateStatus)
 router.get('/activeUsersToday', userController.getActiveUsersToday);
 router.get('/inactiveUsersToday', userController.getInactiveUsersToday);
+router.post('/update-salesman-location',salesmanController.updateSalesmanLocation)
 
 module.exports = router;

@@ -80,3 +80,37 @@ exports.addSalesman = async (req, res) => {
       res.status(500).json(responseStructure.error(errorMessage));
     }
   };
+  exports.updateSalesmanLocation = async (req, res) => {
+    const { userId, location } = req.body; // Extract userId and location from request body
+  
+    try {
+      // Validate input
+      if (!userId || !location) {
+        return res.status(400).json(responseStructure.error('Missing userId or location'));
+      }
+  
+      // Find the salesman by userId and update location
+      const updatedSalesman = await Salesman.findOneAndUpdate(
+        { userId: userId },
+        { location: location },
+        { new: true } // Return the updated document
+      );
+  
+      // Check if salesman is found and updated
+      if (!updatedSalesman) {
+        return res.status(404).json(responseStructure.error('Salesman not found'));
+      }
+  
+      // Structure the response
+      const response = responseStructure.success(updatedSalesman, 'Salesman location updated successfully');
+  
+      // Send the response back to the client
+      res.status(200).json(response);
+    } catch (error) {
+      // Handle errors
+      console.error('Error Updating Salesman Location:', error);
+      const errorMessage = error.message || 'Error updating salesman location';
+      res.status(500).json(responseStructure.error(errorMessage));
+    }
+  };
+  

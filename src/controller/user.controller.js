@@ -43,40 +43,45 @@ exports.register = async (req, res) => {
 
 // Login a user
 exports.login = async (req, res) => {
-    const { email, password } = req.body;
-  
-    try {
-      // Check if the user exists
-      let user = await User.findOne({ email });
-      if (!user) {
-        return res.status(400).json(responseStructure.error('Invalid Credentials'));
-      }
-  
-      // Check if the password is correct
-      const isMatch = await bcrypt.compare(password, user.password);
-      if (!isMatch) {
-        return res.status(400).json(responseStructure.error('Invalid Credentials'));
-      }
-  
-      // Manually set isvalidate in the response
-      const userData = {
-        id: user._id,
-        email: user.email,
-        fullname: user.fullname,
-        gender: user.gender,
-        phonenumber: user.phonenumber,
-        dob: user.dob,
-        isadminapproved: user.isadminapproved,
-        isvalidate: true, // Assuming login success means user is validated
-        createdAt: user.createdAt
-      };
-  
-      res.status(200).json(responseStructure.success(userData, 'Login successful'));
-    } catch (err) {
-      console.error(err.message);
-      res.status(500).json(responseStructure.error('Server error', 500));
+  const { email, password } = req.body;
+
+  try {
+    // Check if the user exists
+    let user = await User.findOne({ email });
+    if (!user) {
+      return res.status(400).json(responseStructure.error('Invalid Credentials'));
     }
-  };
+
+    // Check if the password is correct
+    const isMatch = await bcrypt.compare(password, user.password);
+    if (!isMatch) {
+      return res.status(400).json(responseStructure.error('Invalid Credentials'));
+    }
+
+    // Check if the user is admin approved
+    if (!user.isadminapproved) {
+      return res.status(400).json(responseStructure.error('Your account has not been approved by an admin yet.'));
+    }
+
+    // Manually set isvalidate in the response
+    const userData = {
+      id: user._id,
+      email: user.email,
+      fullname: user.fullname,
+      gender: user.gender,
+      phonenumber: user.phonenumber,
+      dob: user.dob,
+      isadminapproved: user.isadminapproved,
+      isvalidate: true, // Assuming login success means user is validated
+      createdAt: user.createdAt
+    };
+
+    res.status(200).json(responseStructure.success(userData, 'Login successful'));
+  } catch (err) {
+    console.error(err.message);
+    res.status(500).json(responseStructure.error('Server error', 500));
+  }
+};
 exports.updateIsAdminApproved = async (req, res) => {
     const userId = req.query.id;
     const { isadminapproved } = req.body;
