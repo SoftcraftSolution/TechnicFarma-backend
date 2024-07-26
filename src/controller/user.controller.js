@@ -60,7 +60,13 @@ exports.login = async (req, res) => {
 
     // Check if the user is admin approved
     if (!user.isadminapproved) {
-      return res.status(400).json(responseStructure.error('Your account has not been approved by an admin yet.'));
+      return res.status(200).json({
+        statusCode: '200',
+        message: 'Your account has not been approved by an admin yet.',
+        body: {
+          isAdminApproved : false
+        }
+      });
     }
 
     // Manually set isvalidate in the response
@@ -71,7 +77,7 @@ exports.login = async (req, res) => {
       gender: user.gender,
       phonenumber: user.phonenumber,
       dob: user.dob,
-      isadminapproved: user.isadminapproved,
+      isAdminApproved: user.isAdminApproved,
       isvalidate: true, // Assuming login success means user is validated
       createdAt: user.createdAt
     };
@@ -82,9 +88,11 @@ exports.login = async (req, res) => {
     res.status(500).json(responseStructure.error('Server error', 500));
   }
 };
+
+
 exports.updateIsAdminApproved = async (req, res) => {
     const userId = req.query.id;
-    const { isadminapproved } = req.body;
+    const { isAdminApproved} = req.body;
   
     try {
       // Find the user by ID
@@ -94,7 +102,7 @@ exports.updateIsAdminApproved = async (req, res) => {
       }
   
       // Update the isadminapproved field
-      user.isadminapproved = isadminapproved;
+      user.isAdminApproved = isAdminApproved;
       await user.save();
   
       res.status(200).json(responseStructure.success(user, 'User approval status updated successfully'));

@@ -30,7 +30,7 @@ const userSchema = new mongoose.Schema({
   resetCode:{
     type: String,
   },
-  isadminapproved: {
+  isAdminApproved: {
     type: Boolean,
     default: false
   },
