@@ -107,7 +107,7 @@ exports.updateIsAdminApproved = async (req, res) => {
   
     try {
       // Find the user by ID
-      let user = await User.findById(userId);
+      let user = await Salesman.findById(userId);
       if (!user) {
         return res.status(404).json(responseStructure.error('User not found'));
       }
@@ -151,7 +151,7 @@ exports.updateIsAdminApproved = async (req, res) => {
     const { isActive } = req.body;
   
     try {
-      const user = await User.findByIdAndUpdate(
+      const user = await Salesman.findByIdAndUpdate(
         id,
         { isActive },
         { new: true, runValidators: true }
@@ -172,7 +172,7 @@ exports.updateIsAdminApproved = async (req, res) => {
   
     try {
       // Find the user by email
-      const user = await User.findOne({ email });
+      const user = await Salesman.findOne({ email });
       if (!user) {
         return res.status(404).json(responseStructure.error('User not found'));
       }
@@ -214,7 +214,7 @@ exports.updateIsAdminApproved = async (req, res) => {
       // In a real-world scenario, you might want to add more logic to handle the reset code validation
   
       // Find the user by email
-      const user = await User.findOne({ email });
+      const user = await Salesman.findOne({ email });
       if (!user) {
         return res.status(404).json(responseStructure.error('User not found'));
       }
