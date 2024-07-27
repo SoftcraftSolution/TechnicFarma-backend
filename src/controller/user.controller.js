@@ -47,15 +47,26 @@ exports.login = async (req, res) => {
 
   try {
     // Check if the user exists
-    let user = await User.findOne({ email });
+    const user = await User.findOne({ email });
     if (!user) {
-      return res.status(400).json(responseStructure.error('Invalid Credentials'));
+      return res.status(400).json({
+        status: 400,
+        body: {
+          isValid: false
+        }
+      });
     }
 
     // Check if the password is correct
     const isMatch = await bcrypt.compare(password, user.password);
     if (!isMatch) {
-      return res.status(400).json(responseStructure.error('Invalid Credentials'));
+      return res.status(400).json({
+        status: 400,
+        body: {
+          isValid: false
+        }
+      });
+    
     }
 
     // Check if the user is admin approved
