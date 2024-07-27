@@ -3,20 +3,23 @@ const bcrypt = require('bcryptjs');
 const responseStructure = require('../middleware/response');
 const crypto = require('crypto');
 const nodemailer = require('nodemailer');
+const userModel = require('../model/user.model');
 
 // Register a new user
 exports.register = async (req, res) => {
+ 
   try {
     const { email, password, fullname, gender, phonenumber, dob } = req.body;
 
     // Check if the user already exists
-    let user = await User.findOne({ email });
+    let user = await userModel.findOne({ email });
+    console.log("in registration call");
     if (user) {
       return res.status(400).json(responseStructure.error('User already exists'));
     }
 
     // Create a new user
-    user = new User({
+    user = new userModel({
       email,
       password,
       fullname,
@@ -47,7 +50,7 @@ exports.login = async (req, res) => {
 
   try {
     // Check if the user exists
-    const user = await User.findOne({ email });
+    const user = await userModel.findOne({ email });
     if (!user) {
       return res.status(400).json({
         status: 400,
