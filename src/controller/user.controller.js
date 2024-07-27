@@ -99,7 +99,7 @@ exports.login = async (req, res) => {
     res.status(200).json(responseStructure.success(userData, 'Login successful'));
   } catch (err) {
     console.error(err.message);
-    res.status(500).json(responseStructure.error('Server error', 500));
+    res.status(500).json(responseStructure.error(err.message, 500));
   }
 };
 
