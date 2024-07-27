@@ -127,7 +127,7 @@ exports.updateIsAdminApproved = async (req, res) => {
   
     try {
       // Fetch the salesman by userId and sort by createdAt descending
-      const salesman = await User.find()
+      const salesman = await Salesman.find()
   
       // Check if salesman is found
       if (!salesman || salesman.length === 0) {
