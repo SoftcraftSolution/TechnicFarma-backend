@@ -1,4 +1,4 @@
-const User = require('../model/user.model');
+const Salesman = require('../model/user.model');
 const bcrypt = require('bcryptjs');
 const responseStructure = require('../middleware/response');
 const crypto = require('crypto');
@@ -166,44 +166,7 @@ exports.updateIsAdminApproved = async (req, res) => {
       res.status(400).send({ message: error.message });
     }
   }
-  exports.getActiveUsersToday = async (req, res) => {
-    try {
-      const startOfDay = new Date();
-      startOfDay.setHours(0, 0, 0, 0);
-  
-      const endOfDay = new Date();
-      endOfDay.setHours(23, 59, 59, 999);
-  
-      const activeUsers = await User.countDocuments({
-        lastActive: { $gte: startOfDay, $lte: endOfDay },
-        isActive: true,
-      });
-  
-      res.status(200).json(responseStructure.success({ totalActiveUsers: activeUsers }, 'Total active users today fetched successfully'));
-    } catch (error) {
-      console.error('Error fetching active users:', error);
-      res.status(500).json(responseStructure.error('Server error', 500));
-    }
-  };
-  exports.getInactiveUsersToday = async (req, res) => {
-    try {
-      const startOfDay = new Date();
-      startOfDay.setHours(0, 0, 0, 0);
-  
-      const endOfDay = new Date();
-      endOfDay.setHours(23, 59, 59, 999);
-  
-      const inactiveUsers = await User.countDocuments({
-        lastActive: { $gte: startOfDay, $lte: endOfDay },
-        isActive: false,
-      });
-  
-      res.status(200).json(responseStructure.success({ totalInactiveUsers: inactiveUsers }, 'Total inactive users today fetched successfully'));
-    } catch (error) {
-      console.error('Error fetching inactive users:', error);
-      res.status(500).json(responseStructure.error('Server error', 500));
-    }
-  };
+
   exports.forgotPassword = async (req, res) => {
     const { email } = req.body;
   
@@ -269,3 +232,45 @@ exports.updateIsAdminApproved = async (req, res) => {
       res.status(500).json(responseStructure.error('Error resetting password', 500));
     }
   };
+  exports.getTotalSalesmenToday = async (req, res) => {
+    try {
+      const startOfDay = new Date();
+      startOfDay.setHours(0, 0, 0, 0);
+  
+      const endOfDay = new Date();
+      endOfDay.setHours(23, 59, 59, 999);
+  
+      const activeSalesmenCount = await Salesman.countDocuments({
+        lastActive: { $gte: startOfDay, $lte: endOfDay },
+        isActive: true,
+      });
+  
+      const inactiveSalesmenCount = await Salesman.countDocuments({
+        lastActive: { $gte: startOfDay, $lte: endOfDay },
+        isActive: false,
+      });
+  
+      const totalSalesmenCount = await Salesman.countDocuments();
+  
+      const salesmenBirthdaysToday = await Salesman.find({
+        dob: {
+          $gte: startOfDay,
+          $lte: endOfDay,
+        },
+      }, 'fullname dob');
+  
+      res.status(200).json(responseStructure.success(
+        {
+          totalSalesmen: totalSalesmenCount,
+          totalActiveSalesmen: activeSalesmenCount,
+          totalInactiveSalesmen: inactiveSalesmenCount,
+          salesmenBirthdaysToday: salesmenBirthdaysToday,
+        },
+        'Total salesmen, active/inactive salesmen today, and birthdays fetched successfully'
+      ));
+    } catch (error) {
+      console.error('Error fetching salesmen data:', error);
+      res.status(500).json(responseStructure.error('Server error', 500));
+    }
+  };
+  
