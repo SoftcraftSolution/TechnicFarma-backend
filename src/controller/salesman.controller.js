@@ -113,4 +113,59 @@ exports.addSalesman = async (req, res) => {
       res.status(500).json(responseStructure.error(errorMessage));
     }
   };
+  exports.getLocationData = async (req, res) => {
+    try {
+      // Fetch user data with only necessary fields
+      const users = await User.find({}, 'fullname phonenumber isActive  createdAt _id'); // Adjust fields as necessary
+  
+      // Fetch salesman data and populate user details
+      const salesmen = await Salesman.find()
+        .populate({
+          path: 'userId',
+          select: 'fullname phonenumber' // Adjust fields as necessary
+        })
+        .select('userId location address image lastActive isActive createdAt updatedAt'); // Include createdAt, updatedAt for date/time
+  
+      // Create a map of users with their salesmen
+      const userMap = users.reduce((acc, user) => {
+        acc[user._id.toString()] = {
+          name: user.fullname,
+          phone: user.phonenumber,
+          isActive: user.isActive,
+          salesmen: [] // Initialize empty array for salesmen
+        };
+        return acc;
+      }, {});
+  
+      // Populate the salesmen data into the userMap
+      salesmen.forEach(salesman => {
+        const userId = salesman.userId._id.toString();
+        if (userMap[userId]) {
+          userMap[userId].salesmen.push({
+            location: salesman.location,
+            address: salesman.address,
+            image: salesman.image,
+          
+            createdAt: salesman.createdAt,
+            updatedAt: salesman.updatedAt
+          });
+        }
+      });
+  
+      // Construct the response object
+      const data = {
+        users: Object.values(userMap) // Convert map to array
+      };
+  
+      // Send response
+      res.status(200).json(responseStructure.success(
+        data,
+        'Location data for users with their salesmen fetched successfully'
+      ));
+    } catch (error) {
+      console.error('Error fetching location data:', error);
+      res.status(500).json(responseStructure.error('Server error', 500));
+    }
+  };
+  
   
