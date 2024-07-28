@@ -78,7 +78,8 @@ exports.login = async (req, res) => {
         statusCode: '200',
         message: 'Your account has not been approved by an admin yet.',
         body: {
-          isAdminApproved : false
+          isAdminApproved : false,
+          email:user.email
         }
       });
     }
