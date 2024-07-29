@@ -6,11 +6,11 @@ const User = require('../model/user.model');
 exports.addSalesman = async (req, res) => {
   try {
     // Extract the necessary fields from the request body
-    const { location } = req.body;
+    const { address } = req.body;
     const userId = req.body.userId; // Assuming userId is passed in the request body
 
     // Log the received data for debugging
-    console.log('Received Data:', { location, image: req.file, userId });
+    console.log('Received Data:', { address, image: req.file, userId });
 
     // Ensure userId is provided
     if (!userId) {
@@ -38,7 +38,7 @@ exports.addSalesman = async (req, res) => {
     // Create a new salesman object
     const newSalesman = new Salesman({
       userId: userId,
-      location,
+      address,
       image: imageUrl, // Set the image URL (either uploaded or default)
     });
 
@@ -53,7 +53,7 @@ exports.addSalesman = async (req, res) => {
 
     // Structure the response
     const response = responseStructure.success({
-      location: savedSalesman.location,
+      address: savedSalesman.address,
       image: savedSalesman.image
     }, 'Salesman added successfully');
 

@@ -7,7 +7,7 @@ const salesmanSchema = new mongoose.Schema({
     required: true,
     ref: 'User' // Optional: Reference to the User model, if you have it defined
   },
-  location: {
+  address: {
     type: String,
     required: true
   },
