@@ -49,8 +49,9 @@ exports.login = async (req, res) => {
   const { email, password } = req.body;
 
   try {
-    // Check if the user exists
-    const user = await User.findOne({ email });
+    // Check if the user exists and exclude the password field from the result
+    const user = await User.findOne({ email }) // Exclude password field
+
     if (!user) {
       return res.status(400).json({
         status: 400,
@@ -69,7 +70,6 @@ exports.login = async (req, res) => {
           isValid: false
         }
       });
-    
     }
 
     // Check if the user is admin approved
@@ -78,16 +78,16 @@ exports.login = async (req, res) => {
         statusCode: '200',
         message: 'Your account has not been approved by an admin yet.',
         body: {
-          isAdminApproved : false,
-          email:user.email
+          isAdminApproved: false,
+          email: user.email
         }
       });
     }
 
-    // Manually set isvalidate in the response
+    // Prepare user data for response without including sensitive information
     const userData = {
       id: user._id,
-      email: user.email,
+   
       fullname: user.fullname,
       gender: user.gender,
       phonenumber: user.phonenumber,
@@ -97,6 +97,7 @@ exports.login = async (req, res) => {
       createdAt: user.createdAt
     };
 
+    // Send successful login response
     res.status(200).json(responseStructure.success(userData, 'Login successful'));
   } catch (err) {
     console.error(err.message);
