@@ -308,4 +308,40 @@ exports.updateIsAdminApproved = async (req, res) => {
     }
 };
 
+exports.updateLocation = async (req, res) => {
+  const { id } = req.query;
+  const { lat, log } = req.body.location;
 
+  try {
+    // Find user by ID and update location
+    const updatedUser = await User.findByIdAndUpdate(
+      id,
+      {
+        $set: {
+          'location.lat': lat,
+          'location.log': log
+        }
+      },
+      { new: true } // Return the updated document
+    ).select('-password'); // Exclude password from the response
+
+    if (!updatedUser) {
+      return res.status(404).json({
+        status: 404,
+        message: 'User not found'
+      });
+    }
+
+    res.status(200).json({
+      status: 200,
+      message: 'Location updated successfully',
+      body: updatedUser
+    });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({
+      status: 500,
+      message: 'Internal server error'
+    });
+  }
+};

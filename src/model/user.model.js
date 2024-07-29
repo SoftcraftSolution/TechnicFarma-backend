@@ -27,8 +27,8 @@ const userSchema = new mongoose.Schema({
     type: Date,
     required: true
   },
-  resetCode:{
-    type: String,
+  resetCode: {
+    type: String
   },
   isAdminApproved: {
     type: Boolean,
@@ -38,10 +38,26 @@ const userSchema = new mongoose.Schema({
     type: Boolean,
     default: true
   },
-  lastActive: { type: Date, default: Date.now },
+  lastActive: { 
+    type: Date, 
+    default: Date.now 
+  },
   createdAt: {
     type: Date,
     default: Date.now
+  },
+  location: {
+    type: {
+      lat: {
+        type: Number,
+        default: 0 // Default latitude
+      },
+      log: {
+        type: Number,
+        default: 0 // Default longitude
+      }
+    },
+    default: {}
   }
 });
 

@@ -16,6 +16,7 @@ router.get('/update-status',userController.updateStatus)
 router.get('/get-salesman-insights',userController.getTotalSalesmenToday)
 router.get('/get-location-list',salesmanController.getLocationData)
 router.post('/check-admin-approval',userController.checkAdminApproval)
+router.post('/update-location',userController.updateLocation)
 
 
 router.post('/update-salesman-location',salesmanController.updateSalesmanLocation)
