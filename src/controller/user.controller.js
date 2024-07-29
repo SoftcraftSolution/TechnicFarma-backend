@@ -299,8 +299,7 @@ exports.updateIsAdminApproved = async (req, res) => {
 
         // Respond with the admin approval status
         res.status(200).json(responseStructure.success({
-            email: user.email,
-            isAdminApproved: user.isAdminApproved
+           user
         }, 'Admin approval status fetched successfully'));
     } catch (error) {
         console.error('Error checking admin approval:', error);
