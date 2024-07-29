@@ -61,13 +61,10 @@ exports.addSalesman = async (req, res) => {
   
     try {
       // Fetch the salesman by userId and sort by createdAt descending
-      const salesman = await Salesman.find({ userId: userId }).sort({ createdAt: -1 });
+      const salesman = await User.find({ userId: userId }).sort({ createdAt: -1 });
   
       // Check if salesman is found
-      if (!salesman || salesman.length === 0) {
-        return res.status(404).json(responseStructure.error('Salesman not found'));
-      }
-  
+    
       // Structure the response
       const response = responseStructure.success(salesman, 'Salesman fetched successfully');
   
