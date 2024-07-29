@@ -17,10 +17,10 @@ app.use(cors());
 app.use(bodyParser.json({ limit: '100mb' })); // Adjust the limit as needed
 app.use(bodyParser.urlencoded({ extended: true }));
 
-const mongoDB_String="mongodb+srv://Rahul:myuser@rahul.fack9.mongodb.net/Databaserahul?authSource=admin&replicaSet=atlas-117kuv-shard-0&w=majority&readPreference=primary&retryWrites=true&ssl=true";
+
 
 // MongoDB Connection
-mongoose.connect(mongoDB_String, {
+mongoose.connect(process.env.MONGODB_URI, {
   useNewUrlParser: true,
   useUnifiedTopology: true,
 })

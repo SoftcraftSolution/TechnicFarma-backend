@@ -1,9 +1,9 @@
-const Salesman = require('../model/user.model');
+
 const bcrypt = require('bcryptjs');
 const responseStructure = require('../middleware/response');
 const crypto = require('crypto');
 const nodemailer = require('nodemailer');
-const userModel = require('../model/user.model');
+const User= require('../model/user.model');
 
 // Register a new user
 exports.register = async (req, res) => {
@@ -12,14 +12,14 @@ exports.register = async (req, res) => {
     const { email, password, fullname, gender, phonenumber, dob } = req.body;
 
     // Check if the user already exists
-    let user = await userModel.findOne({ email });
+    let user = await User.findOne({ email });
     console.log("in registration call");
     if (user) {
       return res.status(400).json(responseStructure.error('User already exists'));
     }
 
     // Create a new user
-    user = new userModel({
+    user = new User({
       email,
       password,
       fullname,
@@ -50,7 +50,7 @@ exports.login = async (req, res) => {
 
   try {
     // Check if the user exists
-    const user = await userModel.findOne({ email });
+    const user = await User.findOne({ email });
     if (!user) {
       return res.status(400).json({
         status: 400,
@@ -111,7 +111,7 @@ exports.updateIsAdminApproved = async (req, res) => {
   
     try {
       // Find the user by ID
-      let user = await Salesman.findById(userId);
+      let user = await User.findById(userId);
       if (!user) {
         return res.status(404).json(responseStructure.error('User not found'));
       }
@@ -131,7 +131,7 @@ exports.updateIsAdminApproved = async (req, res) => {
   
     try {
       // Fetch the salesman by userId and sort by createdAt descending
-      const salesman = await Salesman.find()
+      const salesman = await User.find()
   
       // Check if salesman is found
       if (!salesman || salesman.length === 0) {
@@ -155,7 +155,7 @@ exports.updateIsAdminApproved = async (req, res) => {
     const { isActive } = req.body;
   
     try {
-      const user = await Salesman.findByIdAndUpdate(
+      const user = await User.findByIdAndUpdate(
         id,
         { isActive },
         { new: true, runValidators: true }
@@ -176,7 +176,7 @@ exports.updateIsAdminApproved = async (req, res) => {
   
     try {
       // Find the user by email
-      const user = await Salesman.findOne({ email });
+      const user = await User.findOne({ email });
       if (!user) {
         return res.status(404).json(responseStructure.error('User not found'));
       }
@@ -218,7 +218,7 @@ exports.updateIsAdminApproved = async (req, res) => {
       // In a real-world scenario, you might want to add more logic to handle the reset code validation
   
       // Find the user by email
-      const user = await Salesman.findOne({ email });
+      const user = await User.findOne({ email });
       if (!user) {
         return res.status(404).json(responseStructure.error('User not found'));
       }
@@ -244,19 +244,19 @@ exports.updateIsAdminApproved = async (req, res) => {
       const endOfDay = new Date();
       endOfDay.setHours(23, 59, 59, 999);
   
-      const activeSalesmenCount = await Salesman.countDocuments({
+      const activeSalesmenCount = await User.countDocuments({
         lastActive: { $gte: startOfDay, $lte: endOfDay },
         isActive: true,
       });
   
-      const inactiveSalesmenCount = await Salesman.countDocuments({
+      const inactiveSalesmenCount = await User.countDocuments({
         lastActive: { $gte: startOfDay, $lte: endOfDay },
         isActive: false,
       });
   
-      const totalSalesmenCount = await Salesman.countDocuments();
+      const totalSalesmenCount = await User.countDocuments();
   
-      const salesmenBirthdaysToday = await Salesman.find({
+      const salesmenBirthdaysToday = await User.find({
         dob: {
           $gte: startOfDay,
           $lte: endOfDay,
@@ -277,4 +277,35 @@ exports.updateIsAdminApproved = async (req, res) => {
       res.status(500).json(responseStructure.error('Server error', 500));
     }
   };
-  
+  exports.checkAdminApproval = async (req, res) => {
+    try {
+        const { email } = req.query; // Get email from query parameter
+
+        if (!email) {
+            return res.status(400).json(responseStructure.error('Email is required', 400));
+        }
+
+        console.log('Searching for email:', email);
+
+        // Find the user by email
+        const user = await User.findOne({ email });
+
+        console.log('User found:', user);
+
+        if (!user) {
+            // If no user is found, return a 404 status with a suitable message
+            return res.status(404).json(responseStructure.error('User not found', 404));
+        }
+
+        // Respond with the admin approval status
+        res.status(200).json(responseStructure.success({
+            email: user.email,
+            isAdminApproved: user.isAdminApproved
+        }, 'Admin approval status fetched successfully'));
+    } catch (error) {
+        console.error('Error checking admin approval:', error);
+        res.status(500).json(responseStructure.error('Server error', 500));
+    }
+};
+
+

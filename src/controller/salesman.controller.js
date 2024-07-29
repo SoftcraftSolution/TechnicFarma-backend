@@ -4,67 +4,82 @@ const responseStructure = require('../middleware/response');
 const User = require('../model/user.model');
 
 exports.addSalesman = async (req, res) => {
-    try {
-      // Extract the necessary fields from the request body
-      const { location } = req.body;
-      const userId = req.body.userId; // Assuming userId is passed in the request body
-  
-      // Log the received data for debugging
-      console.log('Received Data:', { location, image: req.file, userId });
-  
-      // Function to upload image to Cloudinary
-      const uploadToCloudinary = async (filePath) => {
-        try {
-          const result = await cloudinary.uploader.upload(filePath);
-          return result.secure_url;
-        } catch (error) {
-          throw new Error(`Error uploading image: ${error.message}`);
-        }
-      };
-  
-      let imageUrl; // Initialize imageUrl variable
-  
-      // Determine the image URL to use
-      if (req.file) {
-        console.log('Uploading Image:', req.file);
-        imageUrl = await uploadToCloudinary(req.file.path);
-      }
-  
-      // Create a new salesman object
-      const newSalesman = new Salesman({
-        userId: userId,
-        location,
-        image: imageUrl, // Set the image URL (either uploaded or default)
-      });
-  
-      // Save the salesman object to the database
-      const savedSalesman = await newSalesman.save();
-  
-      // Structure the response
-      const response = responseStructure.success({
-        location: savedSalesman.location,
-        image: savedSalesman.image
-      }, 'Salesman added successfully');
-  
-      // Send the response back to the client
-      res.status(201).json(response);
-    } catch (error) {
-      // Handle errors
-      console.error('Error Adding Salesman:', error);
-      const errorMessage = error.message || 'Error adding salesman';
-      res.status(500).json(responseStructure.error(errorMessage));
+  try {
+    // Extract the necessary fields from the request body
+    const { location } = req.body;
+    const userId = req.body.userId; // Assuming userId is passed in the request body
+
+    // Log the received data for debugging
+    console.log('Received Data:', { location, image: req.file, userId });
+
+    // Ensure userId is provided
+    if (!userId) {
+      return res.status(400).json(responseStructure.error('userId is required'));
     }
-  };
+
+    // Function to upload image to Cloudinary
+    const uploadToCloudinary = async (filePath) => {
+      try {
+        const result = await cloudinary.uploader.upload(filePath);
+        return result.secure_url;
+      } catch (error) {
+        throw new Error(`Error uploading image: ${error.message}`);
+      }
+    };
+
+    let imageUrl; // Initialize imageUrl variable
+
+    // Determine the image URL to use
+    if (req.file) {
+      console.log('Uploading Image:', req.file);
+      imageUrl = await uploadToCloudinary(req.file.path);
+    }
+
+    // Create a new salesman object
+    const newSalesman = new Salesman({
+      userId: userId,
+      location,
+      image: imageUrl, // Set the image URL (either uploaded or default)
+    });
+
+    // Log the new salesman object before saving
+    console.log('New Salesman Object:', newSalesman);
+
+    // Save the salesman object to the database
+    const savedSalesman = await newSalesman.save();
+
+    // Log the saved salesman object
+    console.log('Saved Salesman:', savedSalesman);
+
+    // Structure the response
+    const response = responseStructure.success({
+      location: savedSalesman.location,
+      image: savedSalesman.image
+    }, 'Salesman added successfully');
+
+    // Send the response back to the client
+    res.status(201).json(response);
+  } catch (error) {
+    // Handle errors
+    console.error('Error Adding Salesman:', error);
+    const errorMessage = error.message || 'Error adding salesman';
+    res.status(500).json(responseStructure.error(errorMessage));
+  }
+};
+
   
   exports.getSalesmanByUserId = async (req, res) => {
     const userId = req.query.userId; // Assuming userId is passed as a query parameter
   
     try {
       // Fetch the salesman by userId and sort by createdAt descending
-      const salesman = await User.find({ userId: userId }).sort({ createdAt: -1 });
+      const salesman = await Salesman.find({ userId: userId }).sort({ createdAt: -1 });
   
       // Check if salesman is found
-    
+      if (!salesman || salesman.length === 0) {
+        return res.status(404).json(responseStructure.error('Salesman not found'));
+      }
+  
       // Structure the response
       const response = responseStructure.success(salesman, 'Salesman fetched successfully');
   
@@ -113,7 +128,7 @@ exports.addSalesman = async (req, res) => {
   exports.getLocationData = async (req, res) => {
     try {
       // Fetch user data with only necessary fields
-      const users = await User.find({}, 'fullname phonenumber isActive  createdAt _id'); // Adjust fields as necessary
+      const users = await User.find({}, 'fullname phonenumber isActive createdAt _id'); // Adjust fields as necessary
   
       // Fetch salesman data and populate user details
       const salesmen = await Salesman.find()
@@ -122,6 +137,10 @@ exports.addSalesman = async (req, res) => {
           select: 'fullname phonenumber' // Adjust fields as necessary
         })
         .select('userId location address image lastActive isActive createdAt updatedAt'); // Include createdAt, updatedAt for date/time
+  
+      // Debugging logs
+      console.log("User IDs:", users.map(user => user._id.toString()));
+      console.log("Salesman User IDs:", salesmen.map(salesman => salesman.userId._id.toString()));
   
       // Create a map of users with their salesmen
       const userMap = users.reduce((acc, user) => {
@@ -138,14 +157,16 @@ exports.addSalesman = async (req, res) => {
       salesmen.forEach(salesman => {
         const userId = salesman.userId._id.toString();
         if (userMap[userId]) {
+          console.log(`Adding salesman data to user: ${userId}`);
           userMap[userId].salesmen.push({
             location: salesman.location,
             address: salesman.address,
             image: salesman.image,
-          
             createdAt: salesman.createdAt,
             updatedAt: salesman.updatedAt
           });
+        } else {
+          console.warn(`User ID ${userId} not found in userMap`);
         }
       });
   
@@ -164,5 +185,7 @@ exports.addSalesman = async (req, res) => {
       res.status(500).json(responseStructure.error('Server error', 500));
     }
   };
+  
+  
   
   
