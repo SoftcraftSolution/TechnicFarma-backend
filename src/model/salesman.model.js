@@ -11,6 +11,9 @@ const salesmanSchema = new mongoose.Schema({
     type: String,
     required: true
   },
+  title:{
+type:String,
+  },
   image: {
     type: String, // Optional field for image URL or path
     default: null // Default to null if no image is provided
