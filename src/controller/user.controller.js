@@ -245,13 +245,21 @@ exports.updateIsAdminApproved = async (req, res) => {
       const endOfDay = new Date();
       endOfDay.setHours(23, 59, 59, 999);
   
+      console.log('Start of day:', startOfDay);
+      console.log('End of day:', endOfDay);
+  
       const activeSalesmenCount = await User.countDocuments({
-        lastActive: { $gte: startOfDay, $lte: endOfDay },
+       
+        isActive: true,
+      });
+  
+      console.log('Active salesmen count query:', {
+     
         isActive: true,
       });
   
       const inactiveSalesmenCount = await User.countDocuments({
-        lastActive: { $gte: startOfDay, $lte: endOfDay },
+      
         isActive: false,
       });
   
@@ -264,20 +272,25 @@ exports.updateIsAdminApproved = async (req, res) => {
         },
       }, 'fullname dob');
   
-      res.status(200).json(responseStructure.success(
-        {
+      res.status(200).json({
+        status: 200,
+        message: 'Total salesmen, active/inactive salesmen today, and birthdays fetched successfully',
+        body: {
           totalSalesmen: totalSalesmenCount,
           totalActiveSalesmen: activeSalesmenCount,
           totalInactiveSalesmen: inactiveSalesmenCount,
           salesmenBirthdaysToday: salesmenBirthdaysToday,
-        },
-        'Total salesmen, active/inactive salesmen today, and birthdays fetched successfully'
-      ));
+        }
+      });
     } catch (error) {
       console.error('Error fetching salesmen data:', error);
-      res.status(500).json(responseStructure.error('Server error', 500));
+      res.status(500).json({
+        status: 500,
+        message: 'Server error',
+      });
     }
   };
+  
   exports.checkAdminApproval = async (req, res) => {
     try {
         const { email } = req.query; // Get email from query parameter
