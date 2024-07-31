@@ -184,7 +184,7 @@ exports.updateIsAdminApproved = async (req, res) => {
         }
 
         // Generate a reset code
-        const resetCode = crypto.randomInt(100000, 999999).toString(); // 6-digit code
+        const resetCode = crypto.randomInt(1000, 9999).toString(); // 6-digit code
 
         // Upsert (update or insert) the reset code document
         await ResetCode.findOneAndUpdate(
