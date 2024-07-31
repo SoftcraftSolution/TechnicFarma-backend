@@ -4,6 +4,7 @@ const responseStructure = require('../middleware/response');
 const crypto = require('crypto');
 const nodemailer = require('nodemailer');
 const User= require('../model/user.model');
+const ResetCode=require('../model/resetcode.models')
 
 // Register a new user
 exports.register = async (req, res) => {
@@ -185,6 +186,15 @@ exports.updateIsAdminApproved = async (req, res) => {
       // Generate a reset code
       const resetCode = crypto.randomInt(100000, 999999).toString(); // 6-digit code
   
+      // Create a new reset code document
+      const newResetCode = new ResetCode({
+        userId: user._id,
+        code: resetCode
+      });
+  
+      // Save the reset code document to the database
+      await newResetCode.save();
+  
       // Send the reset email
       const transporter = nodemailer.createTransport({
         service: 'Gmail',
@@ -205,10 +215,34 @@ exports.updateIsAdminApproved = async (req, res) => {
   
       await transporter.sendMail(mailOptions);
   
-      res.status(200).json(responseStructure.success('An email has been sent to ' + user.email + ' with the reset code.'));
+      res.status(200).json(responseStructure.success(`An email has been sent to ${user.email} with the reset code.`));
     } catch (err) {
       console.error('Error sending password reset email:', err);
       res.status(500).json(responseStructure.error('Error sending password reset email', 500));
+    }
+  };
+  exports.verifyCode = async (req, res) => {
+    const { email, code } = req.body;
+  
+    try {
+      // Find the user by email
+      const user = await User.findOne({ email });
+      if (!user) {
+        return res.status(404).json(responseStructure.error('User not found'));
+      }
+  
+      // Find the reset code document by userId and code
+      const resetCode = await ResetCode.findOne({ userId: user._id, code });
+      if (!resetCode) {
+        return res.status(400).json(responseStructure.error('Invalid or expired reset code'));
+      }
+  
+      // If the reset code is valid
+      res.status(200).json(responseStructure.success('Reset code is valid'));
+  
+    } catch (err) {
+      console.error('Error verifying reset code:', err);
+      res.status(500).json(responseStructure.error('Error verifying reset code', 500));
     }
   };
   exports.resetPassword = async (req, res) => {

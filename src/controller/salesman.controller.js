@@ -70,30 +70,32 @@ exports.addSalesman = async (req, res) => {
 };
 
   
-  exports.getSalesmanByUserId = async (req, res) => {
-    const userId = req.query.userId; // Assuming userId is passed as a query parameter
-  
-    try {
-      // Fetch the salesman by userId and sort by createdAt descending
-      const salesman = await Salesman.find({ userId: userId }).sort({ createdAt: -1 });
-  
-      // Check if salesman is found
-      if (!salesman || salesman.length === 0) {
-        return res.status(404).json(responseStructure.error('Salesman not found'));
-      }
-  
-      // Structure the response
-      const response = responseStructure.success(salesman, 'Salesman fetched successfully');
-  
-      // Send the response back to the client
-      res.status(200).json(response);
-    } catch (error) {
-      // Handle errors
-      console.error('Error Fetching Salesman:', error);
-      const errorMessage = error.message || 'Error fetching salesman';
-      res.status(500).json(responseStructure.error(errorMessage));
+exports.getSalesmanByUserId = async (req, res) => {
+  const userId = req.query.userId; // Assuming userId is passed as a query parameter
+
+  try {
+    // Check if the user exists in the User model
+    const user = await User.findById(userId);
+
+    if (!user) {
+      return res.status(404).json(responseStructure.error('User not found'));
     }
-  };
+
+    // Fetch the salesman by userId and sort by createdAt descending
+    const salesman = await Salesman.find({ userId: userId }).sort({ createdAt: -1 });
+
+    // Structure the response
+    const response = responseStructure.success(salesman, 'Salesman fetched successfully');
+
+    // Send the response back to the client
+    res.status(200).json(response);
+  } catch (error) {
+    // Handle errors
+    console.error('Error fetching salesman:', error);
+    const errorMessage = error.message || 'Error fetching salesman';
+    res.status(500).json(responseStructure.error(errorMessage));
+  }
+};
   exports.updateSalesmanLocation = async (req, res) => {
     const { userId, location } = req.body; // Extract userId and location from request body
   
