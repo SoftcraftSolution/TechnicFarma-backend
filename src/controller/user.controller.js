@@ -86,18 +86,10 @@ exports.login = async (req, res) => {
     }
 
     // Prepare user data for response without including sensitive information
-    const userData = {
-      fullname: user.fullname,
-      gender: user.gender,
-      phonenumber: user.phonenumber,
-      dob: user.dob,
-      isAdminApproved: user.isAdminApproved,
-      isvalidate: true, // Assuming login success means user is validated
-      createdAt: user.createdAt
-    };
+    
 
     // Send successful login response
-    res.status(200).json(responseStructure.success(userData, 'Login successful'));
+    res.status(200).json(responseStructure.success(user, 'Login successful'));
   } catch (err) {
     console.error(err.message);
     res.status(500).json(responseStructure.error(err.message, 500));
