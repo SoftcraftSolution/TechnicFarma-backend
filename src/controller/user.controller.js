@@ -50,6 +50,23 @@ exports.login = async (req, res) => {
   const { email, password } = req.body;
 
   try {
+    const SUPERADMIN_EMAIL =  'sales.tpe2002@gmail.com';
+    const SUPERADMIN_PASSWORD =  '12345678';
+    // Check if the email is for the superadmin
+    if (email === SUPERADMIN_EMAIL) {
+      // Compare the provided password with the superadmin password
+      if(password === SUPERADMIN_PASSWORD){
+        
+        return res.status(200).json({
+          message: 'Superadmin login successful'
+        });
+      }
+      else{
+        return res.status(401).json({ message: 'Invalid cradentials' });
+      }
+      // Generate JWT token for superadmin
+   
+    }
     // Check if the user exists and exclude the password field from the result
     const user = await User.findOne({ email }) // Exclude password field
 
