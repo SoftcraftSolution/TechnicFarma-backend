@@ -23,5 +23,7 @@ router.post('/update-location',userController.updateLocation)
 
 router.post('/update-salesman-location',salesmanController.updateSalesmanLocation)
 router.post('/write-notes',notesController.createNote)
+router.get('/get-notes-by-id',notesController.getNoteById)
+router.post('/update-notes',notesController.updateNote)
 
 module.exports = router;

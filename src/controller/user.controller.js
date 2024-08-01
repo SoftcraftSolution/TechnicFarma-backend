@@ -87,8 +87,6 @@ exports.login = async (req, res) => {
 
     // Prepare user data for response without including sensitive information
     const userData = {
-      id: user._id,
-   
       fullname: user.fullname,
       gender: user.gender,
       phonenumber: user.phonenumber,
