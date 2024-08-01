@@ -4,6 +4,7 @@ const userController = require('../controller/user.controller');
 const salesmanController = require('../controller/salesman.controller');
 const notesController=require('../controller/notes.controller')
 const upload = require('../middleware/imageupload');
+const adminController=require('../controller/admin.controller')
 
 router.post('/register', userController.register);
 router.post('/login', userController.login);
@@ -25,5 +26,9 @@ router.post('/update-salesman-location',salesmanController.updateSalesmanLocatio
 router.post('/write-notes',notesController.createNote)
 router.get('/get-notes-by-id',notesController.getNoteById)
 router.post('/update-notes',notesController.updateNote)
+router.post('/admin-login',adminController.login)
+router.post('/admin-forgot-password',adminController.forgotPassword)
+router.post('/admin-verify-code',adminController.verifyCode)
+router.post('/admin-reset-password',adminController.resetPassword)
 
 module.exports = router;

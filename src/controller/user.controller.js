@@ -50,23 +50,7 @@ exports.login = async (req, res) => {
   const { email, password } = req.body;
 
   try {
-    const SUPERADMIN_EMAIL =  'sales.tpe2002@gmail.com';
-    const SUPERADMIN_PASSWORD =  '12345678';
-    // Check if the email is for the superadmin
-    if (email === SUPERADMIN_EMAIL) {
-      // Compare the provided password with the superadmin password
-      if(password === SUPERADMIN_PASSWORD){
-        
-        return res.status(200).json({
-          message: 'Superadmin login successful'
-        });
-      }
-      else{
-        return res.status(401).json({ message: 'Invalid cradentials' });
-      }
-      // Generate JWT token for superadmin
-   
-    }
+    
     // Check if the user exists and exclude the password field from the result
     const user = await User.findOne({ email }) // Exclude password field
 
@@ -182,83 +166,50 @@ exports.updateIsAdminApproved = async (req, res) => {
 
   exports.forgotPassword = async (req, res) => {
     const { email } = req.body;
-  
-    // Predefined emails
-    const predefinedEmails = ['sales.tpe2002@gmail.com',];
-  
+
     try {
-      // Find the user by email
-      const user = await User.findOne({ email });
-  
-      if (!user) {
-        // Check if the email is in the predefined emails list
-        if (predefinedEmails.includes(email)) {
-          // Generate a reset code
-          const resetCode = crypto.randomInt(1000, 9999).toString(); // 4-digit code
-  
-          // Send the reset email
-          const transporter = nodemailer.createTransport({
+        // Find the user by email
+        const user = await User.findOne({ email });
+        if (!user) {
+            return res.status(404).json(responseStructure.error('User not found'));
+        }
+
+        // Generate a reset code
+        const resetCode = crypto.randomInt(1000, 9999).toString(); // 6-digit code
+
+        // Upsert (update or insert) the reset code document
+        await ResetCode.findOneAndUpdate(
+            { userId: user._id }, // Filter
+            { userId: user._id, code: resetCode }, // Update
+            { upsert: true, new: true, setDefaultsOnInsert: true } // Options
+        );
+
+        // Send the reset email
+        const transporter = nodemailer.createTransport({
             service: 'Gmail',
             auth: {
-              user: process.env.EMAIL_USERNAME,
-              pass: process.env.EMAIL_PASSWORD
+                user: process.env.EMAIL_USERNAME,
+                pass: process.env.EMAIL_PASSWORD
             }
-          });
-  
-          const mailOptions = {
-            to: email,
+        });
+
+        const mailOptions = {
+            to: user.email,
             from: process.env.EMAIL_FROM,
             subject: 'Password Reset Code',
             text: `You are receiving this because you (or someone else) have requested the reset of the password for your account.\n\n
-                  Your password reset code is: ${resetCode}\n\n
-                  If you did not request this, please ignore this email and your password will remain unchanged.\n`
-          };
-  
-          await transporter.sendMail(mailOptions);
-  
-          return res.status(200).json(responseStructure.success(`An email has been sent to ${email} with the reset code.`));
-        } else {
-          return res.status(404).json(responseStructure.error('User not found'));
-        }
-      }
-  
-      // If user is found, proceed as normal
-      // Generate a reset code
-      const resetCode = crypto.randomInt(1000, 9999).toString(); // 4-digit code
-  
-      // Upsert (update or insert) the reset code document
-      await ResetCode.findOneAndUpdate(
-        { userId: user._id }, // Filter
-        { userId: user._id, code: resetCode }, // Update
-        { upsert: true, new: true, setDefaultsOnInsert: true } // Options
-      );
-  
-      // Send the reset email
-      const transporter = nodemailer.createTransport({
-        service: 'Gmail',
-        auth: {
-          user: process.env.EMAIL_USERNAME,
-          pass: process.env.EMAIL_PASSWORD
-        }
-      });
-  
-      const mailOptions = {
-        to: user.email,
-        from: process.env.EMAIL_FROM,
-        subject: 'Password Reset Code',
-        text: `You are receiving this because you (or someone else) have requested the reset of the password for your account.\n\n
-              Your password reset code is: ${resetCode}\n\n
-              If you did not request this, please ignore this email and your password will remain unchanged.\n`
-      };
-  
-      await transporter.sendMail(mailOptions);
-  
-      res.status(200).json(responseStructure.success(`An email has been sent to ${user.email} with the reset code.`));
+            Your password reset code is: ${resetCode}\n\n
+            If you did not request this, please ignore this email and your password will remain unchanged.\n`
+        };
+
+        await transporter.sendMail(mailOptions);
+
+        res.status(200).json(responseStructure.success(`An email has been sent to ${user.email} with the reset code.`));
     } catch (err) {
-      console.error('Error sending password reset email:', err);
-      res.status(500).json(responseStructure.error('Error sending password reset email', 500));
+        console.error('Error sending password reset email:', err);
+        res.status(500).json(responseStructure.error('Error sending password reset email', 500));
     }
-  };
+};
   exports.verifyCode = async (req, res) => {
     const { email, code } = req.body;
   
