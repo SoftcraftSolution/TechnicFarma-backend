@@ -2,15 +2,16 @@ const cloudinary = require('cloudinary').v2;
 const Salesman = require('../model/salesman.model');
 const responseStructure = require('../middleware/response');
 const User = require('../model/user.model');
+const axios = require('axios'); 
 
 exports.addSalesman = async (req, res) => {
   try {
     // Extract the necessary fields from the request body
-    const { address,title } = req.body;
+    const { lat, lng, title } = req.body;
     const userId = req.body.userId; // Assuming userId is passed in the request body
 
     // Log the received data for debugging
-    console.log('Received Data:', { address,title, image: req.file, userId });
+    console.log('Received Data:', { lat, lng, title, image: req.file, userId });
 
     // Ensure userId is provided
     if (!userId) {
@@ -35,6 +36,20 @@ exports.addSalesman = async (req, res) => {
       imageUrl = await uploadToCloudinary(req.file.path);
     }
 
+    // Function to convert lat/lng to address using Google Maps Geocoding API
+    const getAddressFromLatLng = async (lat, lng) => {
+      const apiKey = process.env.GOOGLE_PLACES_API_KEY;
+      const response = await axios.get(`https://maps.googleapis.com/maps/api/geocode/json?latlng=${lat},${lng}&key=${apiKey}`);
+      if (response.data.status === 'OK') {
+        return response.data.results[0].formatted_address;
+      } else {
+        throw new Error('Unable to get address from lat/lng');
+      }
+    };
+
+    // Get the address from lat/lng
+    const address = await getAddressFromLatLng(lat, lng);
+
     // Create a new salesman object
     const newSalesman = new Salesman({
       userId: userId,
@@ -56,7 +71,7 @@ exports.addSalesman = async (req, res) => {
     const response = responseStructure.success({
       address: savedSalesman.address,
       image: savedSalesman.image,
-      title:savedSalesman.title
+      title: savedSalesman.title
     }, 'Salesman added successfully');
 
     // Send the response back to the client
