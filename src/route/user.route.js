@@ -2,6 +2,7 @@ const express = require('express');
 const router = express.Router();
 const userController = require('../controller/user.controller');
 const salesmanController = require('../controller/salesman.controller');
+const notesController=require('../controller/notes.controller')
 const upload = require('../middleware/imageupload');
 
 router.post('/register', userController.register);
@@ -21,5 +22,6 @@ router.post('/update-location',userController.updateLocation)
 
 
 router.post('/update-salesman-location',salesmanController.updateSalesmanLocation)
+router.post('/write-notes',notesController.createNote)
 
 module.exports = router;

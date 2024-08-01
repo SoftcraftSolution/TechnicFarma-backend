@@ -159,7 +159,7 @@ exports.getSalesmanByUserId = async (req, res) => {
   
       // Debugging logs
       console.log("User IDs:", users.map(user => user._id.toString()));
-      console.log("Salesman User IDs:", salesmen.map(salesman => salesman.userId._id.toString()));
+      console.log("Salesman User IDs:", salesmen.map(salesman => salesman.userId ? salesman.userId._id.toString() : 'No userId'));
   
       // Create a map of users with their salesmen
       const userMap = users.reduce((acc, user) => {
@@ -174,8 +174,8 @@ exports.getSalesmanByUserId = async (req, res) => {
   
       // Populate the salesmen data into the userMap
       salesmen.forEach(salesman => {
-        const userId = salesman.userId._id.toString();
-        if (userMap[userId]) {
+        const userId = salesman.userId ? salesman.userId._id.toString() : null;
+        if (userId && userMap[userId]) {
           console.log(`Adding salesman data to user: ${userId}`);
           userMap[userId].salesmen.push({
             location: salesman.location,
@@ -184,8 +184,10 @@ exports.getSalesmanByUserId = async (req, res) => {
             createdAt: salesman.createdAt,
             updatedAt: salesman.updatedAt
           });
-        } else {
+        } else if (userId) {
           console.warn(`User ID ${userId} not found in userMap`);
+        } else {
+          console.warn(`Salesman with null or undefined userId`);
         }
       });
   
