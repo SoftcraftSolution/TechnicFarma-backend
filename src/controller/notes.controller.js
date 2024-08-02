@@ -62,42 +62,45 @@ exports.getNoteById = async (req, res) => {
     };
 // Update a note by ID
 exports.updateNote = async (req, res) => {
-    try {
+  try {
       const noteId = req.query.id; // Get the noteId from the query parameter
+      console.log('Received noteId:', noteId); // Log the noteId to the console
+
       const { title, content } = req.body; // Extract title and content from the request body
-  
+
       // Validate input
       if (!mongoose.Types.ObjectId.isValid(noteId)) {
-        return res.status(400).json(responseStructure.error('Invalid note ID format', 400));
+          return res.status(400).json(responseStructure.error('Invalid note ID format', 400));
       }
       if (!title && !content) {
-        return res.status(400).json(responseStructure.error('At least one field (title or content) is required', 400));
+          return res.status(400).json(responseStructure.error('At least one field (title or content) is required', 400));
       }
-  
+
       // Find the note by ID
       const note = await Note.findById(noteId);
       if (!note) {
-        return res.status(404).json(responseStructure.error('Note not found', 404));
+          return res.status(404).json(responseStructure.error('Note not found', 404));
       }
-  
+
       // Update the note's fields
       if (title) note.title = title;
       if (content) note.content = content;
       note.updatedAt = Date.now(); // Update the timestamp
-  
+
       // Save the updated note
       const updatedNote = await note.save();
-  
+
       // Send success response
       res.status(200).json(responseStructure.success(
-        updatedNote,
-        'Note updated successfully'
+          updatedNote,
+          'Note updated successfully'
       ));
-    } catch (error) {
+  } catch (error) {
       console.error('Error updating note:', error);
       res.status(500).json(responseStructure.error('Server error', 500));
-    }
-  };
+  }
+};
+
 
 // Delete a note by ID
 exports.deleteNote = async (req, res) => {

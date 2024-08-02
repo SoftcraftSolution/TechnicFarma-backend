@@ -26,6 +26,7 @@ router.post('/update-salesman-location',salesmanController.updateSalesmanLocatio
 router.post('/write-notes',notesController.createNote)
 router.get('/get-notes-by-id',notesController.getNoteById)
 router.post('/update-notes',notesController.updateNote)
+router.delete('/delete-notes',notesController.deleteNote)
 router.post('/admin-login',adminController.login)
 router.post('/admin-forgot-password',adminController.forgotPassword)
 router.post('/admin-verify-code',adminController.verifyCode)
