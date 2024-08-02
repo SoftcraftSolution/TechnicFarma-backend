@@ -47,7 +47,7 @@ exports.getNoteById = async (req, res) => {
           .exec();
         
         if (notes.length === 0) {
-          return res.status(404).json(responseStructure.error('No notes found for the specified user', 404));
+          return res.status(200).json(responseStructure.error('No notes found for the specified user', 200));
         }
     
         // Construct the response object
