@@ -6,7 +6,8 @@ const responseStructure = {
     }),
     error: (statusCode, errorMessage) => ({
       status: statusCode,
-      message: errorMessage
+      message: errorMessage,
+      body: []
     })
   };
   

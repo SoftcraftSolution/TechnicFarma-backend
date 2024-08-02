@@ -46,10 +46,10 @@ exports.getNoteById = async (req, res) => {
           .select('title content createdAt updatedAt') // Select only note fields
           .exec();
         
-        if (notes.length === 0) {
-          return res.status(200).json(responseStructure.error('No notes found for the specified user', 200));
-        }
-    
+          if (notes.length === 0) {
+            return res.status(200).json(responseStructure.error('No notes found for the specified user', 200));
+          }
+          
         // Construct the response object
         res.status(200).json(responseStructure.success(
           notes,
